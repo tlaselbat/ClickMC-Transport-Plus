@@ -1,7 +1,7 @@
 // Define the plugins used in this build script
 plugins {
 	// Use the Fabric Loom plugin for Minecraft mod development
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.10.1'
 	// Use the Maven Publish plugin for publishing the mod to a repository
 	id 'maven-publish'
 }
@@ -40,12 +40,14 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	// Use the Fabric Loader dependency
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	// Use the Fabric API dependency
-		modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// Use the Fabric API dependency, but exclude data generation module to avoid setup clash
+	modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+		exclude module: 'fabric-data-generation-api-v1'
+	}
 	// Use the Cloth Config dependency
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		// Exclude the Fabric API group to avoid conflicts
-	exclude(group: 'net.fabricmc.fabric-api')
+		exclude(group: 'net.fabricmc.fabric-api')
 	}
 	// Use the Mod Menu dependency
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
@@ -74,18 +76,7 @@ java {
 }
 
 // Configure the JAR task
-jar {
-compileJava {
-
-
-	// Add the mod's JAR to the JAR
-	from("build/libs/${project.archivesBaseName}-${project.version}.jar")
-
-	// Add the mod's JAR to the JAR
-	from("build/libs/${project.archivesBaseName}-${project.version}-sources.jar")
-
-
-}}
+// (Removed malformed nested jar/compileJava block)
 
 //// Configure the publishing settings
 //publishing {

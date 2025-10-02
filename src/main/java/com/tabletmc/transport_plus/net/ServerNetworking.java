@@ -15,7 +15,7 @@ public class ServerNetworking extends ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(StringPayload.PACKET_ID, (StringPayload handler, ServerPlayNetworking.Context context) -> {
             if (handler.stringPayload().equals("summon")) {
                 ((ServerPlayerEntityImpl) context.player()).summonMount(true);
-//                context.player().sendMessage(Text.literal("Horse summoned!"));
+                context.player().sendMessage(Text.literal("Horse summoned!"));
             } else if (handler.stringPayload().equals("dismount")) {
                 ((ServerPlayerEntityImpl) context.player()).dismountHorse(false);
                 context.player().sendMessage(Text.literal("Horse dismounted!"));

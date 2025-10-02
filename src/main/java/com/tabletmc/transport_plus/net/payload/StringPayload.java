@@ -76,7 +76,7 @@ public record StringPayload(String stringPayload) implements CustomPayload {
      *
      * @return the packet ID
      */
-
+    @Override
     public CustomPayload.Id<StringPayload> getId() {
         return PACKET_ID;
     }

@@ -1,60 +1,56 @@
 package com.tabletmc.transport_plus.item;
 
 import com.tabletmc.transport_plus.ModConstants;
+import com.tabletmc.transport_plus.item.custom.WhistleItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.AnimalArmorItem;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 
-import static net.minecraft.item.ArmorMaterials.NETHERITE;
+// import static net.minecraft.item.ArmorMaterials.NETHERITE; // 1.21.8 mapping changes; will re-add with correct symbol
 
-/**
- * This class contains the definitions for the mod's items.
- */
+
 public class ModItems  {
 
 //TODO: add trinket item for horse storage
 
-
-	/**
-	 * The Netherite Horse Armor item.
-	 */
-	public static final Item NETHERITE_HORSE_ARMOR = registerModItems(
-			new AnimalArmorItem(
-					NETHERITE, // Material
-					AnimalArmorItem.Type.EQUESTRIAN, // Type
-					true, // Can be used on horses
-					new Item.Settings().maxCount(1).fireproof() // Settings
+    // 1.21.8: Component-based equestrian armor using EQUIPPABLE on BODY (animal armor)
+    public static final Item NETHERITE_HORSE_ARMOR = registerModItems("netherite_horse_armor",
+            new Item(new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, ModConstants.Id("netherite_horse_armor")))
+                    .equippable(EquipmentSlot.BODY)
+                    .maxCount(1)
+                    .fireproof()
+                    .translationKey("item.transport_plus.netherite_horse_armor")
+            )
+    );
+	public static final Item WHISTLE = registerModItems("whistle",
+			new WhistleItem(
+					new Item.Settings()
+						.registryKey(RegistryKey.of(RegistryKeys.ITEM, ModConstants.Id("whistle")))
+						.maxCount(1)
+						.fireproof()
+						.translationKey("item.transport_plus.whistle")
 			)
 	);
 
-	/**
-	 * Adds items to the item group.
-	 *
-	 * @param entries The item group entries.
-	 */
-	private static void addItemsToItemGroup(FabricItemGroupEntries entries) {
+    private static void addItemsToItemGroup(FabricItemGroupEntries entries) {
 		// Add the Netherite Horse Armor item to the item group
-		entries.add(NETHERITE_HORSE_ARMOR);
+        entries.add(NETHERITE_HORSE_ARMOR);
+		// Add the Whistle item to the item group
+		entries.add(WHISTLE);
 	}
 
-	/**
-	 * Registers a mod item.
-	 *
-	 * @param item The item to register.
-	 * @return The registered item.
-	 */
-	private static Item registerModItems(Item item) {
+	private static Item registerModItems(String itemName, Item item) {
 		// Register the item with the game's registry
-		return Registry.register(Registries.ITEM, ModConstants.Id("netherite_horse_armor"), item);
+		return Registry.register(Registries.ITEM, ModConstants.Id(itemName), item);
 	}
 
-	/**
-	 * Registers the mod's items.
-	 */
 	public static void registerModItems() {
 		// Modify the TOOLS item group to include our mod's items
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS)

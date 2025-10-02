@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "transport-plus",
-	"version": "beta-1.0.0",
+	"version": "${version}",
 	"name": "ClickMC: Transport Plus",
 	"description": "A brief description of the mod.",
 	"authors": ["TabletMC"],
@@ -16,11 +16,11 @@
 		"main": ["com.tabletmc.transport_plus.ModInitializer"]
 	},
 	"mixins": ["transport_plus.mixins.json"],
-	"dependencies": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": ">=1.21",
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.8",
 		"java": ">=21",
-		"fabric-api": "*",
+		"fabric": ">=0.133.4+1.21.8",
 		"cloth-config": "*"
 	},
 	"suggestedDependencies": {

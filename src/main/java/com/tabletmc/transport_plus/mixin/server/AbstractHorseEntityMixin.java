@@ -1,11 +1,17 @@
 package com.tabletmc.transport_plus.mixin.server;
 
+import com.tabletmc.transport_plus.ModConstants;
 import com.tabletmc.transport_plus.impl.NetheriteArmorImpl;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EquippableComponent;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,8 +19,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static com.tabletmc.transport_plus.item.ModItems.NETHERITE_HORSE_ARMOR;
 
 @Mixin(value = AbstractHorseEntity.class)
 public abstract class AbstractHorseEntityMixin implements NetheriteArmorImpl {
@@ -41,23 +45,23 @@ public abstract class AbstractHorseEntityMixin implements NetheriteArmorImpl {
      */
     public void updateNetheriteArmor() {
         // Get the horse's current body armor
-        Item currentArmor = ((AnimalEntity) (Object) this).getBodyArmor().getItem();
+        ItemStack armorStack = ((AnimalEntity) (Object) this).getBodyArmor();
+        Item currentArmor = armorStack.getItem();
 
-        // Check if the current armor is Netherite Horse Armor
-        mountArmor = currentArmor.equals(NETHERITE_HORSE_ARMOR.asItem());
+        // Verify this is an equippable set for the BODY (animal armor) slot, and matches our netherite armor id
+        EquippableComponent eq = armorStack.get(DataComponentTypes.EQUIPPABLE);
+        boolean isBodySlot = eq != null && eq.slot() == EquipmentSlot.BODY;
+        boolean isNetheriteArmor;
+        try {
+            isNetheriteArmor = Registries.ITEM.getId(currentArmor).equals(ModConstants.Id("netherite_horse_armor"));
+        } catch (Throwable t) {
+            // Defensive: if items are not fully registered yet, avoid crashing during early init
+            isNetheriteArmor = false;
+        }
+        mountArmor = isBodySlot && isNetheriteArmor;
     }
 
-    // Method to write the Netherite armor flag to NBT
-    @Inject(method="writeCustomDataToNbt", at = @At("HEAD"))
-    public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
-        nbt.putBoolean("HorseArmor", mountArmor);
-    }
-
-    // Method to read the Netherite armor flag from NBT
-    @Inject(method="readCustomDataFromNbt", at = @At("HEAD"))
-    public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
-        mountArmor = nbt.getBoolean("HorseArmor");
-    }
+    // NBT persistence hooks removed for 1.21.8; armor flag is recomputed via updateNetheriteArmor().
 
     /**
      * This method is injected into the 'tickControlled' method of the AbstractHorseEntity class.
@@ -80,10 +84,12 @@ public abstract class AbstractHorseEntityMixin implements NetheriteArmorImpl {
             // Check if the horse has not already double jumped, and if it has enough jump strength.
             // Also check if the horse is in the air and not on the ground.
             // If all these conditions are true, the horse will perform a special jump.
-            if (!doubleJumped && jumpStrength > 0.0F && ahe.isInAir() && !ahe.isOnGround())  {
+            if (!doubleJumped && jumpStrength > 0.0F && !ahe.isOnGround())  {
                 // Set the horse's velocity to its current velocity, but with the y-component modified by the jump boost velocity modifier.
                 // This gives the horse an upward boost.
-                ahe.setVelocity(ahe.getVelocity().x, ahe.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH) , ahe.getVelocity().z);
+                double jumpAttr = ahe.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
+                float yBoost = Math.max(0.1F, (float) jumpAttr * 0.1F);
+                ahe.setVelocity(ahe.getVelocity().x, ahe.getVelocity().y + yBoost , ahe.getVelocity().z);
 
                 // Calculate the horizontal components of the horse's velocity based on its yaw (rotation around the y-axis).
                 // These components will be used to give the horse a horizontal boost.
